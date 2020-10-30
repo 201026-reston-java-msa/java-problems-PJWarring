@@ -1,6 +1,8 @@
 package com.revature.eval.java.core;
 
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +16,11 @@ public class EvaluationService {
 	 * @return
 	 */
 	public String reverse(String string) {
-		
-		return "";
+		String reverse = "";
+		for (int i = string.length()-1; i >= 0; i--) {
+			reverse += string.charAt(i);
+		}
+		return reverse;
 	}
 
 	/**
@@ -27,8 +32,12 @@ public class EvaluationService {
 	 * @return
 	 */
 	public String acronym(String phrase) {
-		// TODO Write an implementation for this method declaration
-		return null;
+		String[] stringArr = phrase.split(" ");
+		String acro = "";
+		for (int i = 0; i < stringArr.length; i++) {
+			acro += Character.toString(stringArr[i].charAt(0)).toUpperCase();
+		}
+		return acro;
 	}
 
 	/**
@@ -81,18 +90,20 @@ public class EvaluationService {
 		}
 
 		public boolean isEquilateral() {
-			// TODO Write an implementation for this method declaration
-			return false;
+			if (this.sideOne == this.sideTwo && this.sideOne == this.sideThree) return true; //a = b, a = c; therefore b=c
+			else return false;
 		}
 
 		public boolean isIsosceles() {
-			// TODO Write an implementation for this method declaration
-			return false;
+			if (this.isEquilateral() || (this.sideOne == this.sideTwo 
+					|| this.sideOne == this.sideThree || this.sideTwo == this.sideThree)) return true;
+			else return false;
 		}
 
 		public boolean isScalene() {
-			// TODO Write an implementation for this method declaration
-			return false;
+			if (this.sideOne != this.sideTwo 
+					&& this.sideOne != this.sideThree && this.sideTwo != this.sideThree) return true;
+			else return false;
 		}
 
 	}
@@ -113,8 +124,48 @@ public class EvaluationService {
 	 * @return
 	 */
 	public int getScrabbleScore(String string) {
-		// TODO Write an implementation for this method declaration
-		return 0;
+		string = string.toLowerCase();
+		int score = 0;
+		for (int i = 0; i < string.length(); i++) {
+			switch (string.charAt(i)) {
+			case 'z':
+			case 'q':
+				score += 10;
+				break;
+			case 'x':
+			case 'j':
+				score += 8;
+				break;
+			case 'k':
+				score += 5;
+				break;
+			case 'y':
+			case 'w':
+			case 'v':
+			case 'h':
+			case 'f':
+				score += 4;
+				break;
+			case 'p':
+			case 'm':
+			case 'c':
+			case 'b':
+				score += 3;
+				break;
+			case 'd':
+			case 'g':
+				score += 2;
+				break;
+			default: //all other characters
+				//this could pose a problem as non-letters also return 1
+				//however, in the game of scrabble, non-letters are not possible
+				//and I think I can reasonably assume if the method implementer
+				//chooses to allow them, they should be worth 1
+				score += 1;
+				break;
+			}
+		}
+		return score;
 	}
 
 	/**
@@ -149,8 +200,26 @@ public class EvaluationService {
 	 * NANP-countries, only 1 is considered a valid country code.
 	 */
 	public String cleanPhoneNumber(String string) {
-		// TODO Write an implementation for this method declaration
-		return null;
+		//get number
+		String number = ""; //phone number without punctuation
+		for (int i = 0; i < string.length(); i++) {
+			if (isInt(string.charAt(i))) {
+				number += string.charAt(i);
+			}
+		}
+		//if len is 11 remove the first digit (1) else return the number
+		if (number.length() == 11) return number.substring(1);
+		else return number;
+	}
+	
+	//helper method for cleanPhoneNumber
+	public boolean isInt(char s) {
+		try {
+			Integer.parseInt(Character.toString(s));
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	/**
@@ -163,8 +232,23 @@ public class EvaluationService {
 	 * @return
 	 */
 	public Map<String, Integer> wordCount(String string) {
-		// TODO Write an implementation for this method declaration
-		return null;
+		//check if word exists in map, if yes 'continue;'
+		//if no, get the word count and add it to the map
+		Map<String, Integer> wordCount = new HashMap<String, Integer>();
+		String[] stringArr = string.split(" ");
+		for (int i = 0; i < stringArr.length; i++) {
+			if (wordCount.get(stringArr[i]) == null) {
+				int count = 0;
+				for (int j = i; j < stringArr.length; j++) {
+					if (stringArr[j] == stringArr[i]) {
+						count++;
+					}
+				}
+				wordCount.put(stringArr[i], count);
+			}
+		}
+		
+		return wordCount;
 	}
 
 	/**
@@ -203,6 +287,7 @@ public class EvaluationService {
 	 * 
 	 */
 	static class BinarySearch<T> {
+		//do not need to do
 		private List<T> sortedList;
 
 		public int indexOf(T t) {
@@ -243,7 +328,7 @@ public class EvaluationService {
 	 * @return
 	 */
 	public String toPigLatin(String string) {
-		// TODO Write an implementation for this method declaration
+		//take the strings first character, or more if its a cluster, then move it to the end if it is
 		return null;
 	}
 
@@ -264,7 +349,17 @@ public class EvaluationService {
 	 */
 	public boolean isArmstrongNumber(int input) {
 		// TODO Write an implementation for this method declaration
-		return false;
+		//get count of digits (len of toString)
+		//take digits and perform operation
+		//does it equal input? - return answer
+		String numberStr = Integer.toString(input);
+		int digits = numberStr.length();
+		int sum = 0;
+		for (int i = 0; i < digits; i++) {
+			sum += Math.pow(Integer.parseInt(Character.toString(numberStr.charAt(i))), digits);
+		}
+		if (sum == input) return true;
+		else return false;
 	}
 
 	/**
@@ -278,8 +373,34 @@ public class EvaluationService {
 	 * @return
 	 */
 	public List<Long> calculatePrimeFactorsOf(long l) {
-		// TODO Write an implementation for this method declaration
-		return null;
+		List<Long> factors = new ArrayList<Long>();
+		List<Long> primeFactors = new ArrayList<Long>();
+		
+		//is l prime?
+		if (isPrime(l)) { //if yes add it to prime factors and return
+			primeFactors.add(l);
+		} else { //if no find first factor of l, and its pair, then calculate their prime factors and return
+			long i = 2L;
+			while (l % i != 0) i++; //find and add first factor pair
+			factors.add(i);
+			factors.add(l / i);
+			for (long j : factors) {
+				List<Long> tempFactors = calculatePrimeFactorsOf(j);
+				for (long k : tempFactors) {
+					primeFactors.add(k);
+				}
+			}
+		}
+		//return prime factors
+		return primeFactors;
+	}
+	
+	//helper method for question 10
+	public boolean isPrime(long l) {
+		for (long i = 2L; i <= (long) Math.ceil(l/2); i++) {
+			if (l % i == 0) return false;
+		}
+		return true;
 	}
 
 	/**
@@ -336,9 +457,18 @@ public class EvaluationService {
 	 * @return
 	 */
 	public int calculateNthPrime(int i) {
-		// TODO Write an implementation for this method declaration
-		return 0;
+		int j = 2;
+		while (i > 0) {
+			if (isPrime(j)) {
+				i--;
+				if (i == 0) break;
+			}
+			j++;
+		}
+		return j;
 	}
+	
+	//is prime is written below question 10
 
 	/**
 	 * 13 & 14. Create an implementation of the atbash cipher, an ancient encryption
@@ -373,8 +503,24 @@ public class EvaluationService {
 		 * @return
 		 */
 		public static String encode(String string) {
-			// TODO Write an implementation for this method declaration
-			return null;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < string.length(); i++) {
+				int asciiVal = (int) string.charAt(i);
+				//check if the char is a letter
+				if ((asciiVal >= 65 && asciiVal <= 90) || (asciiVal >= 97 && asciiVal <= 122)) {
+					if (Character.isUpperCase(string.charAt(i))) { //character is uppercase
+						asciiVal -= 64 + 26; //64 is one below the ascii value of 'A'
+						asciiVal = Math.abs(asciiVal);
+						asciiVal += 65;
+					} else { //character is lowercase
+						asciiVal -= 96 + 26; //96 is one below the ascii value of 'a'
+						asciiVal = Math.abs(asciiVal);
+						asciiVal += 97;
+					}
+				}
+				sb.append((char) asciiVal);
+			}
+			return sb.toString().toLowerCase();
 		}
 
 		/**
@@ -384,8 +530,24 @@ public class EvaluationService {
 		 * @return
 		 */
 		public static String decode(String string) {
-			// TODO Write an implementation for this method declaration
-			return null;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < string.length(); i++) {
+				int asciiVal = (int) string.charAt(i);
+				//check if the char is a letter
+				if ((asciiVal >= 65 && asciiVal <= 90) || (asciiVal >= 97 && asciiVal <= 122)) {
+					if (Character.isUpperCase(string.charAt(i))) { //character is uppercase
+						asciiVal -= 64 + 26; //64 is one below the ascii value of 'A'
+						asciiVal = Math.abs(asciiVal);
+						asciiVal += 65;
+					} else { //character is lowercase
+						asciiVal -= 96 + 26; //96 is one below the ascii value of 'a'
+						asciiVal = Math.abs(asciiVal);
+						asciiVal += 97;
+					}
+				}
+				sb.append((char) asciiVal);
+			}
+			return sb.toString().toLowerCase();
 		}
 	}
 
@@ -430,8 +592,13 @@ public class EvaluationService {
 	 * @return
 	 */
 	public boolean isPangram(String string) {
-		// TODO Write an implementation for this method declaration
-		return false;
+		string = string.toLowerCase();
+		HashMap<String, Boolean> lettersMap = new HashMap<String, Boolean>();
+		for (int i = 97; i <= 122; i++) lettersMap.put(Character.toString((char) i), true);
+		for (int i = 0; i < string.length(); i++)
+			if (lettersMap.get(Character.toString(string.charAt(i)) != null)) lettersMap.remove(Character.toString(string.charAt(i)));
+		if (lettersMap.size() == 0) return true;
+		else return false;
 	}
 
 	/**
@@ -443,6 +610,7 @@ public class EvaluationService {
 	 * @return
 	 */
 	public Temporal getGigasecondDate(Temporal given) {
+		//do not need to do
 		// TODO Write an implementation for this method declaration
 		return null;
 	}
