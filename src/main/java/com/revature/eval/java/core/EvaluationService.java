@@ -702,8 +702,35 @@ public class EvaluationService {
 	 * @return
 	 */
 	public int solveWordProblem(String string) {
-		// TODO Write an implementation for this method declaration
+		String[] equation = string.split(" "); // ["what", "is", "int", "function", "by" - not always included, "int"+"?"]
+		if (isInt(equation[2]) && isInt(equation[equation.length-1].replaceAll("?", ""))) {
+			int x = Integer.parseInt(equation[2]);
+			int y = Integer.parseInt(equation[equation.length-1].replaceAll("?", ""));
+			switch (equation[3]) {
+			case "plus":
+				return x+y;
+			case "minus":
+				return x-y;
+			case "mulitplied":
+				return x*y;
+			case "divided":
+				return x/y;
+			default:
+				System.out.println(equation[3] + " is not a valid function.");
+				System.out.println("Try something like 'what is 3 multiplied by 4'");
+			}
+		} else System.out.println(equation[2] + " and " + equation[equation.length-1] + " are not valid values, try entering integers.");
 		return 0;
+	}
+	
+	//helper method for question 20
+	public boolean isInt(String s) {
+		try {
+			Integer.parseInt(s);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 }
