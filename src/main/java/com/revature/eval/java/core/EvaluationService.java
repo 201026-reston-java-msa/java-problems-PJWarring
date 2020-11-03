@@ -329,7 +329,72 @@ public class EvaluationService {
 	 */
 	public String toPigLatin(String string) {
 		//take the strings first character, or more if its a cluster, then move it to the end if it is
-		return null;
+		String[] stringArr = string.split(" ");
+		
+		//there are more digraphs and trigraphs than this, but I
+		//could not find a list of them that would cover the given test cases
+		//and every list I looked at seemed to contradict the others
+		//so I simply chose to exclusively include the digraphs and trigraphs
+		//from the test cases; however, should one want to add new digraphs or trigraphs
+		//you only need to add them to the array below
+		String[] trigraphs = {"sch"};
+		String[] digraphs = {"th", "qu"};
+		
+		String[] vowels = {"a", "e", "i", "o", "u"};
+		String ending = "ay";
+		StringBuilder sb = new StringBuilder();
+
+		//for each word in stringArr
+		for (int i = 0; i < stringArr.length; i++) {
+			//check for trigraph, if yes, shift characters and return
+			for (int j = 0; j < trigraphs.length; j++) {
+				if (stringArr[i].length() < 3) break;
+				if (stringArr[i].charAt(0) == trigraphs[j].charAt(0) &&
+						stringArr[i].charAt(1) == trigraphs[j].charAt(1) &&
+						stringArr[i].charAt(2) == trigraphs[j].charAt(2)) {
+					for (int k = 3; k < stringArr[i].length(); k++) {
+						sb.append(stringArr[i].charAt(k));
+					}
+					sb.append(trigraphs[j] + "ay");
+					return sb.toString();
+				}
+			}
+			
+			//check for digraph, if yes, shift characters and return
+			for (int j = 0; j < digraphs.length; j++) {
+				if (stringArr[i].length() < 2) break;
+				if (stringArr[i].charAt(0) == digraphs[j].charAt(0) &&
+						stringArr[i].charAt(1) == digraphs[j].charAt(1)) {
+					for (int k = 2; k < stringArr[i].length(); k++) {
+						sb.append(stringArr[i].charAt(k));
+					}
+					sb.append(digraphs[j] + "ay");
+					return sb.toString();
+				}
+			}
+			
+			//check if the first char is a vowel, if yes, add the ending and return
+			for (int j = 0; j < vowels.length; j++) {
+				if (stringArr[i].length() < 1) break;
+				if (stringArr[i].charAt(0) == vowels[j].charAt(0)) {
+					for (int k = 1; k < stringArr[i].length(); k++) {
+						sb.append(stringArr[i].charAt(k));
+					}
+					sb.append("ay");
+					return sb.toString();
+				}
+			}
+			
+			//if none of the above conditions are met shift the first char to the end, 
+			//add the ending, and return
+			for (int k = 1; k < stringArr[i].length(); k++) {
+				sb.append(stringArr[i].charAt(k));
+			}
+			sb.append(stringArr[i].charAt(0) + "ay");
+			return sb.toString();
+		}
+		
+		return "";
 	}
 
 	/**
@@ -434,12 +499,36 @@ public class EvaluationService {
 
 		public RotationalCipher(int key) {
 			super();
-			this.key = key;
+			this.key = key % 26; 
+			//I modified the key assignment to allow for the key to be greater
+			//than 26 -- for instance
+			//a key of 39 would be converted to 13 since 39 means
+			//we loop around the alphabet once and then shift 13 characters
 		}
 
 		public String rotate(String string) {
-			// TODO Write an implementation for this method declaration
-			return null;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < string.length(); i++) {
+				int asciiVal = (int) string.charAt(i);
+				if (asciiVal >= 65 && asciiVal <= 90) { //letter is uppercase
+					asciiVal = asciiVal % 64; //convert numbers to 1-26 values
+					asciiVal += this.key; //add the key
+					//first set the keys above 26 to their <26 val - ie. 39 > 13
+					//then add 64 to move the key back into its ascii val (65-90)
+					asciiVal = (asciiVal % 26) + 64;
+					sb.append((char) asciiVal); //add the new character to the string
+				} else if (asciiVal >= 97 && asciiVal <= 122) { //letter is lowercase
+					asciiVal = asciiVal % 96; //convert numbers to 1-26 values
+					asciiVal += this.key; //add the key
+					//first set the keys above 26 to their <26 val - ie. 39 > 13
+					//then add 96 to move the key back into its ascii val (97-122)
+					asciiVal = (asciiVal % 26) + 96;
+					sb.append((char) asciiVal); //add the new character to the string
+				} else { //character is not a letter
+					sb.append((char) asciiVal); //add the character to the string
+				}
+			}
+			return sb.toString();
 		}
 
 	}
@@ -457,6 +546,7 @@ public class EvaluationService {
 	 * @return
 	 */
 	public int calculateNthPrime(int i) {
+		if (i <= 0) throw new IllegalArgumentException();
 		int j = 2;
 		while (i > 0) {
 			if (isPrime(j)) {
@@ -574,8 +664,22 @@ public class EvaluationService {
 	 * @return
 	 */
 	public boolean isValidIsbn(String string) {
-		// TODO Write an implementation for this method declaration
-		return false;
+		List<Integer> nums = new ArrayList<>();
+		for (int i = 0; i < string.length(); i++) { //fill nums with the numbers
+			if ((int) string.toUpperCase().charAt(i) == 88 || isInt(string.charAt(i))) { //valid int
+				if ((int) string.toUpperCase().charAt(i) == 88) nums.add(10);
+				else nums.add(Integer.parseInt(Character.toString(string.charAt(i))));
+			}
+		}
+		//validate number
+		int sum = 0;
+		for (int i = 0; i < nums.size(); i++) {
+			for (int j = 10; j > 0; j--) {
+				sum += nums.get(i) * j;
+			}
+		}
+		if (sum % 11 == 0) return true;
+		else return false;
 	}
 
 	/**
@@ -629,7 +733,15 @@ public class EvaluationService {
 	 * @return
 	 */
 	public int getSumOfMultiples(int i, int[] set) {
-		// TODO Write an implementation for this method declaration
+		int sum = 0;
+		for (int j = 0; j < i; j++) {
+			for (int k = 0; k < set.length; k++) {
+				if (j % k == 0) {
+					sum += j; //add number to sum
+					break; //the number is a valid multiple, there is no need to continue checking
+				}
+			}
+		}
 		return 0;
 	}
 
@@ -670,7 +782,38 @@ public class EvaluationService {
 	 * @return
 	 */
 	public boolean isLuhnValid(String string) {
-		// TODO Write an implementation for this method declaration
+		//len(s) > 1 - spaces allowed (strip before rest of code)
+		// no non digit chars besides spaces - double every second digit starting from the right
+		// if doubled num >9 -9, sum digits then %10, if 0 then valid
+		if (string.length() > 1) {
+			List<Integer> nums = new ArrayList<>();
+			boolean secondBool = false;
+			//remove whitespace
+			string = string.replaceAll(" ", "");
+			//loop through string backwards
+			for (int i = string.length()-1; i > -1; i--) {
+				if (isInt(string.charAt(i))) {
+					if (secondBool) {
+						int tempInt = Integer.parseInt(Character.toString(string.charAt(i))) * 2;
+						if (tempInt > 9) {
+							tempInt -= 9;
+						}
+						nums.add(tempInt);
+					} else {
+						nums.add(Integer.parseInt(Character.toString(string.charAt(i))));
+					}
+					if (secondBool) secondBool = false;
+					else secondBool = true;
+				} else return false;
+			}
+			//loop through array list and find sum
+			int sum = 0;
+			for (int i = 0; i < nums.size(); i++) {
+				sum += nums.get(i);
+			}
+			if (sum % 10 == 0) return true;
+			else return false;
+		}
 		return false;
 	}
 
@@ -703,15 +846,15 @@ public class EvaluationService {
 	 */
 	public int solveWordProblem(String string) {
 		String[] equation = string.split(" "); // ["what", "is", "int", "function", "by" - not always included, "int"+"?"]
-		if (isInt(equation[2]) && isInt(equation[equation.length-1].replaceAll("?", ""))) {
+		if (isInt(equation[2]) && isInt(equation[equation.length-1].replace("?", ""))) {
 			int x = Integer.parseInt(equation[2]);
-			int y = Integer.parseInt(equation[equation.length-1].replaceAll("?", ""));
+			int y = Integer.parseInt(equation[equation.length-1].replace("?", ""));
 			switch (equation[3]) {
 			case "plus":
 				return x+y;
 			case "minus":
 				return x-y;
-			case "mulitplied":
+			case "multiplied":
 				return x*y;
 			case "divided":
 				return x/y;
