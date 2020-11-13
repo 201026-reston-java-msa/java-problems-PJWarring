@@ -32,7 +32,7 @@ public class EvaluationService {
 	 * @return
 	 */
 	public String acronym(String phrase) {
-		String[] stringArr = phrase.split(" ");
+		String[] stringArr = phrase.replaceAll("[-,.]", " ").replaceAll("\\s+", " ").split(" ");
 		String acro = "";
 		for (int i = 0; i < stringArr.length; i++) {
 			acro += Character.toString(stringArr[i].charAt(0)).toUpperCase();
@@ -208,6 +208,7 @@ public class EvaluationService {
 			}
 		}
 		//if len is 11 remove the first digit (1) else return the number
+		if (number.length() < 10 || number.length() > 11) throw new IllegalArgumentException();
 		if (number.length() == 11) return number.substring(1);
 		else return number;
 	}
@@ -345,6 +346,7 @@ public class EvaluationService {
 		StringBuilder sb = new StringBuilder();
 
 		//for each word in stringArr
+		outerloop: //label is used to continue the outerloop from the innerloop
 		for (int i = 0; i < stringArr.length; i++) {
 			//check for trigraph, if yes, shift characters and return
 			for (int j = 0; j < trigraphs.length; j++) {
@@ -356,7 +358,8 @@ public class EvaluationService {
 						sb.append(stringArr[i].charAt(k));
 					}
 					sb.append(trigraphs[j] + "ay");
-					return sb.toString();
+					if (i < stringArr.length-1) sb.append(" ");
+					continue outerloop;
 				}
 			}
 			
@@ -369,7 +372,8 @@ public class EvaluationService {
 						sb.append(stringArr[i].charAt(k));
 					}
 					sb.append(digraphs[j] + "ay");
-					return sb.toString();
+					if (i < stringArr.length-1) sb.append(" ");
+					continue outerloop;
 				}
 			}
 			
@@ -381,7 +385,8 @@ public class EvaluationService {
 						sb.append(stringArr[i].charAt(k));
 					}
 					sb.append("ay");
-					return sb.toString();
+					if (i < stringArr.length-1) sb.append(" ");
+					continue outerloop;
 				}
 			}
 			
@@ -391,10 +396,11 @@ public class EvaluationService {
 				sb.append(stringArr[i].charAt(k));
 			}
 			sb.append(stringArr[i].charAt(0) + "ay");
-			return sb.toString();
+			if (i < stringArr.length-1) sb.append(" ");
+			continue;
 		}
 		
-		return "";
+		return sb.toString();
 	}
 
 	/**
@@ -594,9 +600,18 @@ public class EvaluationService {
 		 */
 		public static String encode(String string) {
 			StringBuilder sb = new StringBuilder();
+			int letterCount = 0;
 			for (int i = 0; i < string.length(); i++) {
 				int asciiVal = (int) string.charAt(i);
 				//check if the char is a letter
+				if (Character.toString(string.charAt(i)).matches("[0-9]")) {
+					if (letterCount == 5) {
+						letterCount = 0;
+						sb.append(" ");
+					}
+					sb.append(string.charAt(i));
+					letterCount++;
+				}
 				if ((asciiVal >= 65 && asciiVal <= 90) || (asciiVal >= 97 && asciiVal <= 122)) {
 					if (Character.isUpperCase(string.charAt(i))) { //character is uppercase
 						asciiVal -= 64 + 26; //64 is one below the ascii value of 'A'
@@ -607,8 +622,14 @@ public class EvaluationService {
 						asciiVal = Math.abs(asciiVal);
 						asciiVal += 97;
 					}
+					
+					if (letterCount == 5) {
+						letterCount = 0;
+						sb.append(" ");
+					}
+					sb.append((char) asciiVal);
+					letterCount++;
 				}
-				sb.append((char) asciiVal);
 			}
 			return sb.toString().toLowerCase();
 		}
@@ -637,7 +658,7 @@ public class EvaluationService {
 				}
 				sb.append((char) asciiVal);
 			}
-			return sb.toString().toLowerCase();
+			return sb.toString().toLowerCase().replaceAll(" ", "");
 		}
 	}
 
@@ -665,20 +686,31 @@ public class EvaluationService {
 	 */
 	public boolean isValidIsbn(String string) {
 		List<Integer> nums = new ArrayList<>();
-		for (int i = 0; i < string.length(); i++) { //fill nums with the numbers
+		for (int i = 0; i < string.length()-1; i++) { //fill nums with the numbers
 			if ((int) string.toUpperCase().charAt(i) == 88 || isInt(string.charAt(i))) { //valid int
 				if ((int) string.toUpperCase().charAt(i) == 88) nums.add(10);
 				else nums.add(Integer.parseInt(Character.toString(string.charAt(i))));
+			} else if ((int) string.toUpperCase().charAt(i) != 45) {
+				return false;
 			}
 		}
+		
+		int checkDigit = 0;
+		if (Character.toString(string.charAt(string.length() - 1)).equals("X")) checkDigit = 10;
+		else if (Character.toString(string.charAt(string.length() - 1)).matches("[0-9]")) checkDigit = Integer.parseInt(Character.toString(string.charAt(string.length() - 1)));
+		else return false; //this shouldnt happen - but I added this to prevent crashes
+		
 		//validate number
 		int sum = 0;
-		for (int i = 0; i < nums.size(); i++) {
+		for (int i = 0; i < nums.size()-1; i++) {
 			for (int j = 10; j > 0; j--) {
 				sum += nums.get(i) * j;
 			}
 		}
-		if (sum % 11 == 0) return true;
+		System.out.println(string);
+		System.out.println(string.charAt(string.length() - 1));
+		System.out.println(checkDigit);
+		if (11 - (sum % 11) == checkDigit) return true;
 		else return false;
 	}
 
@@ -698,11 +730,11 @@ public class EvaluationService {
 	public boolean isPangram(String string) {
 		string = string.toLowerCase();
 		HashMap<String, Boolean> lettersMap = new HashMap<String, Boolean>();
-		for (int i = 97; i <= 122; i++) lettersMap.put(Character.toString((char) i), true);
+		for (int i = 97; i <= 122; i++) lettersMap.put(Character.toString((char) i), false);
 		for (int i = 0; i < string.length(); i++)
-			if (lettersMap.get(Character.toString(string.charAt(i)) != null)) lettersMap.remove(Character.toString(string.charAt(i)));
+			if (lettersMap.get(Character.toString(string.charAt(i))) != null) lettersMap.remove(Character.toString(string.charAt(i)));
 		if (lettersMap.size() == 0) return true;
-		else return false;
+		return false;
 	}
 
 	/**
@@ -736,13 +768,13 @@ public class EvaluationService {
 		int sum = 0;
 		for (int j = 0; j < i; j++) {
 			for (int k = 0; k < set.length; k++) {
-				if (j % k == 0) {
+				if (j % set[k] == 0) {
 					sum += j; //add number to sum
 					break; //the number is a valid multiple, there is no need to continue checking
 				}
 			}
 		}
-		return 0;
+		return sum;
 	}
 
 	/**
