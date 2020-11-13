@@ -236,16 +236,14 @@ public class EvaluationService {
 		//check if word exists in map, if yes 'continue;'
 		//if no, get the word count and add it to the map
 		Map<String, Integer> wordCount = new HashMap<String, Integer>();
-		String[] stringArr = string.split(" ");
+		String[] stringArr = string.replaceAll("[,|.|-|\\n]", " ").replaceAll("\\s+", " ").split(" ");
 		for (int i = 0; i < stringArr.length; i++) {
 			if (wordCount.get(stringArr[i]) == null) {
-				int count = 0;
-				for (int j = i; j < stringArr.length; j++) {
-					if (stringArr[j] == stringArr[i]) {
-						count++;
-					}
-				}
-				wordCount.put(stringArr[i], count);
+				wordCount.put(stringArr[i], 1);
+			} else {
+				int oldCount = wordCount.get(stringArr[i]);
+				int newCount = oldCount + 1;
+				wordCount.replace(stringArr[i], newCount);
 			}
 		}
 		
@@ -381,7 +379,7 @@ public class EvaluationService {
 			for (int j = 0; j < vowels.length; j++) {
 				if (stringArr[i].length() < 1) break;
 				if (stringArr[i].charAt(0) == vowels[j].charAt(0)) {
-					for (int k = 1; k < stringArr[i].length(); k++) {
+					for (int k = 0; k < stringArr[i].length(); k++) {
 						sb.append(stringArr[i].charAt(k));
 					}
 					sb.append("ay");
@@ -521,14 +519,18 @@ public class EvaluationService {
 					asciiVal += this.key; //add the key
 					//first set the keys above 26 to their <26 val - ie. 39 > 13
 					//then add 64 to move the key back into its ascii val (65-90)
-					asciiVal = (asciiVal % 26) + 64;
+					asciiVal = asciiVal % 26;
+					if (asciiVal == 0) asciiVal = 26;
+					asciiVal += 64;
 					sb.append((char) asciiVal); //add the new character to the string
 				} else if (asciiVal >= 97 && asciiVal <= 122) { //letter is lowercase
 					asciiVal = asciiVal % 96; //convert numbers to 1-26 values
 					asciiVal += this.key; //add the key
 					//first set the keys above 26 to their <26 val - ie. 39 > 13
 					//then add 96 to move the key back into its ascii val (97-122)
-					asciiVal = (asciiVal % 26) + 96;
+					asciiVal = asciiVal % 26;
+					if (asciiVal == 0) asciiVal = 26;
+					asciiVal += 96;
 					sb.append((char) asciiVal); //add the new character to the string
 				} else { //character is not a letter
 					sb.append((char) asciiVal); //add the character to the string
@@ -702,14 +704,12 @@ public class EvaluationService {
 		
 		//validate number
 		int sum = 0;
-		for (int i = 0; i < nums.size()-1; i++) {
-			for (int j = 10; j > 0; j--) {
+		int j = 10;
+		for (int i = 0; i < nums.size(); i++) {
 				sum += nums.get(i) * j;
-			}
+				j--;
 		}
-		System.out.println(string);
-		System.out.println(string.charAt(string.length() - 1));
-		System.out.println(checkDigit);
+		
 		if (11 - (sum % 11) == checkDigit) return true;
 		else return false;
 	}
